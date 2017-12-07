@@ -1,0 +1,11 @@
+{
+  "$schema": "https://dev.office.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "sp-fx-sudoku-client-side-solution",
+    "id": "506edd77-5abd-405b-b2e5-481ed1759d9b",
+    "version": "1.0.0.0"
+  },
+  "paths": {
+    "zippedPackage": "solution/sp-fx-sudoku.sppkg"
+  }
+}
