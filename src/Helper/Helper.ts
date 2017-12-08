@@ -48,7 +48,7 @@ export class Helper {
      */
     public static getSquare(cellId: number): number {
 
-        return ((cellId - (cellId % 9)) / 9) + 1;
+        return cellId % 9 == 0 ? cellId / 9 : ((cellId - (cellId % 9)) / 9) + 1;
     }
 
     public static getSquares(cellId: number, type: string): number[] {
@@ -69,11 +69,11 @@ export class Helper {
                 }
             case 'Column':
                 {
-                    let subGridId: number = this.getSquare(cellId);
-                    if (subGridId == 1 || subGridId == 4 || subGridId == 7) {
+                    let square: number = this.getSquare(cellId);
+                    if (square == 1 || square == 4 || square == 7) {
                         return [1, 4, 7];
                     }
-                    else if (subGridId == 2 || subGridId == 5 || subGridId == 8) {
+                    else if (square == 2 || square == 5 || square == 8) {
                         return [2, 5, 8];
                     }
                     else {
@@ -96,11 +96,11 @@ export class Helper {
 
         let mod9: number = cellId % 9 == 0 ? 9 : cellId % 9;
 
-        let rowIndex: number = mod9 / 3;
+        let rowIndex: number = Math.floor(mod9 / 3);
         rowIndex = mod9 % 3 == 0 ? rowIndex - 1 : rowIndex;
 
         let firstIndex: number = Helper.getFirstIndex(square);
         firstIndex = firstIndex + (3 * (rowIndex));
-        return 0;
+        return firstIndex;
     }
 }
