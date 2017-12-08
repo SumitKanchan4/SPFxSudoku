@@ -1,6 +1,7 @@
 import * as React from 'react';
 import styles from './Sudoku.module.scss';
 import { ISudokuProps, ISudokuState } from './ISudokuProps';
+import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 
 export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> {
 
@@ -14,7 +15,8 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
     this.state = {
       sudokuGrid: [],
       gameGenerated: false,
-      status: undefined
+      status: undefined,
+      tempCount: -1
     };
   }
 
@@ -64,8 +66,20 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
             </div>
           }
         </div>
+        <PrimaryButton onClick={() => this.increaseCounter()}>Play Game</PrimaryButton>>
+
       </div>
     );
+  }
+
+  private increaseCounter() {
+
+    let counter = this.state.tempCount + 1;
+    this.sudokuTemp = this.state.sudokuGrid;
+    this.setState({ tempCount: counter }, () => {
+      this.sudokuTemp[this.state.tempCount] = this.getCellValue(this.state.tempCount);
+      this.setState({ sudokuGrid: this.sudokuTemp });
+    });
   }
 
   private createSubGrid(id: number): React.ReactElement<ISudokuProps> {
@@ -109,9 +123,9 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
     // Initilaize the sudoku
     let sudoku: number[] = [];
     for (var i = 0; i < this.totalCellCount; i++) {
-      sudoku.push(0);
+      sudoku.push(i);
     }
-    this.sudokuTemp = sudoku;
+
     this.fillByCell(sudoku);
 
     // #region TO BE DELETED
@@ -296,18 +310,18 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
 
   // #endregion
 
-  /** ------------------------------- Start Processing ----------------------------------- */
+  // ------------------------------- Start Processing ----------------------------------- //
 
   /**
    * Start filling the sudoku cells
    */
-  private fillByCell(sudoku:number[]): void {
+  private fillByCell(sudoku: number[]): void {
 
-    sudoku.forEach((element,index) => {
-      console.log(index);
-      element = this.getCellValue(index);
-      console.log(element);
-    });
+    // while (sudoku.length > 0) {
+    //   let index: number = sudoku.splice(0, 1)[0];
+    //   let cellValue = this.getCellValue(index);
+    //   this.sudokuTemp.push(cellValue);
+    // }
 
     this.setState({ sudokuGrid: this.sudokuTemp, gameGenerated: true });
   }
@@ -327,7 +341,7 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
     }
     else {
       // Get the index using random to fill in the value
-      let index: number = possibleMoves.length == 1 ? 0 : this.getRandomValue(1, possibleMoves.length);
+      let index: number = possibleMoves.length == 1 ? 1 : this.getRandomValue(1, possibleMoves.length);
       cellValue = possibleMoves[index - 1];
     }
     return cellValue;
@@ -352,24 +366,34 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
         return this.backtrack(backtrackCellId - 1, originalCellId);
       }
       else {
-        let index: number = 0;
-        do {
-          index = this.getRandomValue(1, possibleMoves.length);
-        } while (possibleMoves[index] == backTrackValue);
+        let index: number = -1;
+        let cellValue: number = -1;
 
-        // Update the value of the back tracked cell Id 
-        this.sudokuTemp[backtrackCellId] = possibleMoves[index];
 
-        // Now check if this resolves the conflict
-        possibleMoves = this.getPossibleValues(originalCellId);
+        while (possibleMoves.length > 0) {
 
-        if (possibleMoves.length > 0) {
-          index = this.getRandomValue(1, possibleMoves.length);
-          return possibleMoves[index];
+          let move: number = possibleMoves.pop();
+
+          if (move != backTrackValue) {
+            this.sudokuTemp[backtrackCellId] = move;
+
+            // Now check if this resolves the conflict
+            let origCellPossibleMove = this.getPossibleValues(originalCellId);
+
+            if (origCellPossibleMove.length > 0) {
+              index = this.getRandomValue(1, origCellPossibleMove.length);
+              cellValue = origCellPossibleMove[index];
+              break;
+            }
+          }
         }
-        else {
+
+        if (cellValue == -1) {
           this.sudokuTemp[backtrackCellId] = backTrackValue;
           return this.backtrack(backtrackCellId - 1, originalCellId);
+        }
+        else {
+          return cellValue;
         }
       }
     }
@@ -393,7 +417,7 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
 
     do {
       random = Math.round(Math.random() * 10);
-    } while (random >= minValue && random <= maxValue);
+    } while (random < minValue || random > maxValue);
 
     return random;
   }
@@ -528,6 +552,15 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
 
     // Check the value should be between 1 and 9
     possibleValue = possibleValue.filter(item => item > 0 && item < 10);
+
+    // if(possibleValue.length == 0){
+    console.log(`Cell: ${cellId}`);
+    console.log(`Columns: ${JSON.stringify(byColumn)}`);
+    console.log(`Rows: ${JSON.stringify(byRow)}`);
+    console.log(`Grid: ${JSON.stringify(bySubGrid)}`);
+    console.log(`final Possibility: ${JSON.stringify(possibleValue)}`);
+    console.log(`----------------------------------`);
+    // }
 
     return possibleValue;
   }
