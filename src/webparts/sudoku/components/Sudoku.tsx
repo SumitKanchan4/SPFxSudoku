@@ -2,6 +2,8 @@ import * as React from 'react';
 import styles from './Sudoku.module.scss';
 import { ISudokuProps, ISudokuState } from './ISudokuProps';
 import { PrimaryButton } from 'office-ui-fabric-react/lib/Button';
+import { Helper } from '../../../Helper/Helper';
+import { AvailableValues } from '../../../Helper/AvailableValues';
 
 export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> {
 
@@ -16,13 +18,15 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
       sudokuGrid: [],
       gameGenerated: false,
       status: undefined,
-      tempCount: -1
+      tempCount: 0
     };
   }
 
   public render(): React.ReactElement<ISudokuProps> {
     return (
       <div className={styles.sudoku}>
+        <PrimaryButton onClick={() => this.increaseCounter()}>Next Move</PrimaryButton>
+
         <div className={styles.container}>
           {this.state.gameGenerated ?
             <div className={styles.grid}>
@@ -66,8 +70,6 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
             </div>
           }
         </div>
-        <PrimaryButton onClick={() => this.increaseCounter()}>Play Game</PrimaryButton>>
-
       </div>
     );
   }
@@ -77,37 +79,38 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
     let counter = this.state.tempCount + 1;
     this.sudokuTemp = this.state.sudokuGrid;
     this.setState({ tempCount: counter }, () => {
-      this.sudokuTemp[this.state.tempCount] = this.getCellValue(this.state.tempCount);
+      let cellValue = this.getCellValue(this.state.tempCount);
+      this.sudokuTemp[this.state.tempCount] = cellValue;
       this.setState({ sudokuGrid: this.sudokuTemp });
     });
   }
 
   private createSubGrid(id: number): React.ReactElement<ISudokuProps> {
-    let minIndex: number = this.getSubGirdFirstIndex(id);
+    let minIndex: number = Helper.getFirstIndex(id);
     return (
       <div className={styles.grid}>
         <div className={styles.row}>
-          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex - 1]}
-          </div>
           <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex]}
           </div>
-          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex + 1]}
+          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex += 1]}
+          </div>
+          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex += 1]}
           </div>
         </div>
         <div className={styles.row}>
-          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex + 2]}
+          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex += 1]}
           </div>
-          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex + 3]}
+          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex += 1]}
           </div>
-          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex + 4]}
+          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex += 1]}
           </div>
         </div>
         <div className={styles.row}>
-          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex + 5]}
+          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex += 1]}
           </div>
-          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex + 6]}
+          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex += 1]}
           </div>
-          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex + 7]}
+          <div className={`${styles.column} ms-sm4`}>{this.state.sudokuGrid[minIndex += 1]}
           </div>
         </div>
       </div>
@@ -115,42 +118,20 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
   }
 
   public componentWillMount(): void {
-    this.createSudoku();
+    this.initializeSudoku();
   }
 
-  private createSudoku(): void {
+  private initializeSudoku(): void {
 
     // Initilaize the sudoku
     let sudoku: number[] = [];
-    for (var i = 0; i < this.totalCellCount; i++) {
+    this.sudokuTemp.push(-1); // pushing this value to start index from 1
+    for (var i = 1; i <= this.totalCellCount; i++) {
       sudoku.push(i);
+      this.sudokuTemp.push(0);
     }
 
     this.fillByCell(sudoku);
-
-    // #region TO BE DELETED
-    // this.sudokuTemp = sudokuGrid
-    // //  this.setState({ sudokuGrid: sudokuGrid, gameGenerated: true });
-    // // Initialize sudoku grid with the default values
-    // this.setState({ sudokuGrid: sudokuGrid }, () => {
-
-    //   let totalSubGrid: number[] = [1, 2];
-
-    //   while (totalSubGrid.length > 0) {
-    //     let subGrid: number = Math.round(Math.random() * 10);
-    //     let position: number = totalSubGrid.indexOf(subGrid);
-
-    //     // Checking if the grid is still left to be filled
-    //     if (position >= 0) {
-    //       // Removing the found element 
-    //       totalSubGrid.splice(position, 1)
-    //       this.fillSubGrid(subGrid);
-    //     }
-    //   }
-
-    //   this.setState({ sudokuGrid: this.sudokuTemp, gameGenerated: true });
-    // });
-    // #endregion
   }
 
   // #region TO BE DELETED
@@ -333,7 +314,7 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
   private getCellValue(cellId: number): number {
 
     let cellValue: number = 0;
-    let possibleMoves: number[] = this.getPossibleValues(cellId);
+    let possibleMoves: number[] = this.getPossibleValues(cellId); // Get the possible values for the current cell ID
 
     // If there are no possible moves than backtrack and try other options
     if (possibleMoves.length == 0) {
@@ -341,7 +322,7 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
     }
     else {
       // Get the index using random to fill in the value
-      let index: number = possibleMoves.length == 1 ? 1 : this.getRandomValue(1, possibleMoves.length);
+      let index: number = possibleMoves.length == 1 ? 1 : Helper.getRandomValue(1, possibleMoves.length);
       cellValue = possibleMoves[index - 1];
     }
     return cellValue;
@@ -354,187 +335,56 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
    */
   private backtrack(backtrackCellId: number, originalCellId: number): number {
 
-    if (backtrackCellId >= 0) {
-      let backTrackValue: number = this.sudokuTemp[backtrackCellId];
+    // if (backtrackCellId >= 0) {
+    //   let backTrackValue: number = this.sudokuTemp[backtrackCellId];
 
-      this.sudokuTemp[backtrackCellId] = 0;
-      let possibleMoves: number[] = this.getPossibleValues(backtrackCellId);
+    //   this.sudokuTemp[backtrackCellId] = 0;
+    //   let possibleMoves: number[] = this.getPossibleValues(backtrackCellId);
 
-      // if the back tracked cell does not have any other option backtrack again
-      if (possibleMoves.length == 0 || (possibleMoves.length == 1 && possibleMoves[0] == backTrackValue)) {
-        this.sudokuTemp[backtrackCellId] = backTrackValue;
-        return this.backtrack(backtrackCellId - 1, originalCellId);
-      }
-      else {
-        let index: number = -1;
-        let cellValue: number = -1;
+    //   // if the back tracked cell does not have any other option backtrack again
+    //   if (possibleMoves.length == 0 || (possibleMoves.length == 1 && possibleMoves[0] == backTrackValue)) {
+    //     this.sudokuTemp[backtrackCellId] = backTrackValue;
+    //     return this.backtrack(backtrackCellId - 1, originalCellId);
+    //   }
+    //   else {
+    //     let index: number = -1;
+    //     let cellValue: number = -1;
 
 
-        while (possibleMoves.length > 0) {
+    //     while (possibleMoves.length > 0) {
 
-          let move: number = possibleMoves.pop();
+    //       let move: number = possibleMoves.pop();
 
-          if (move != backTrackValue) {
-            this.sudokuTemp[backtrackCellId] = move;
+    //       if (move != backTrackValue) {
+    //         this.sudokuTemp[backtrackCellId] = move;
 
-            // Now check if this resolves the conflict
-            let origCellPossibleMove = this.getPossibleValues(originalCellId);
+    //         // Now check if this resolves the conflict
+    //         let origCellPossibleMove = this.getPossibleValues(originalCellId);
 
-            if (origCellPossibleMove.length > 0) {
-              index = this.getRandomValue(1, origCellPossibleMove.length);
-              cellValue = origCellPossibleMove[index];
-              break;
-            }
-          }
-        }
+    //         if (origCellPossibleMove.length > 0) {
+    //           index = this.getRandomValue(1, origCellPossibleMove.length);
+    //           cellValue = origCellPossibleMove[index - 1];
+    //           break;
+    //         }
+    //       }
+    //     }
 
-        if (cellValue == -1) {
-          this.sudokuTemp[backtrackCellId] = backTrackValue;
-          return this.backtrack(backtrackCellId - 1, originalCellId);
-        }
-        else {
-          return cellValue;
-        }
-      }
-    }
-    else {
-      alert(`could not find value for the cell ${originalCellId}`);
-      return -1;
-    }
+    //     if (cellValue == -1) {
+    //       this.sudokuTemp[backtrackCellId] = backTrackValue;
+    //       return this.backtrack(backtrackCellId - 1, originalCellId);
+    //     }
+    //     else {
+    //       return cellValue;
+    //     }
+    //   }
+    // }
+    // else {
+    //   alert(`could not find value for the cell ${originalCellId}`);
+    //   return -1;
+    // }
+    return -1;
   }
 
-
-  /** ------------------------------ Helper Methods starts  ------------------------------- */
-
-  /**
-   * Returns the random value between the min and max value
-   * @param minValue Minimum value of the random number
-   * @param maxValue Maximum value of the random number
-   */
-  private getRandomValue(minValue: number, maxValue: number): number {
-
-    let random: number = 0;
-
-    do {
-      random = Math.round(Math.random() * 10);
-    } while (random < minValue || random > maxValue);
-
-    return random;
-  }
-
-  /**
-   * Return the possible values that can be filled
-   * @param array Array of values which needs to be checked
-   */
-  private getAvailableValues(array: number[]): number[] {
-    return this.allowedValues.filter(item => array.indexOf(item) < 0);
-  }
-
-  /**
-   * Returns the first index of the subgrid
-   * @param gridID 
-   */
-  private getSubGirdFirstIndex(gridID: number): number {
-    return ((gridID - 1) * 9) + 1;
-  }
-
-  /**
-   * Returns the last index of the subgrid
-   * @param gridID 
-   */
-  private getSubGridLastIndex(gridID: number): number {
-    return (gridID * 9);
-  }
-
-  /**
-   * Returns the Grid id to which the current cell belongs
-   * @param cellId 
-   */
-  private getSubGridByCellId(cellId: number): number {
-
-    return ((cellId - (cellId % 9)) / 9) + 1;
-  }
-
-  /** ------------------------------ Validation methods starts  ------------------------------- */
-
-  /**
-   * Returns the possible values in the grid
-   * @param cellId Current Cell ID
-   */
-  private getAvailableValuesByRow(cellId: number): number[] {
-
-    let unavailable: number[] = [];
-    let subGridId: number = this.getSubGridByCellId(cellId) - 1; // Subtracting to consider start as 0 index
-    let subGridIndentificationValue: number = Math.floor(subGridId / 3);
-
-    // finds the grids which represents the row for the current cellId
-    let subGrids: number[] = this.allowedValues.filter(item => Math.floor(item / 3) == subGridIndentificationValue);
-
-    // Finds the row number of the cell in the sub grid
-    let rowInSubGrid: number = (((cellId % 9) - 1) / 3);
-
-    // Iterate over each grid and get the assigned values
-    subGrids.forEach(grid => {
-
-      // Identify the first index of the subgrid of same row as of current cell ID
-      let firstIndex: number = this.getSubGirdFirstIndex(grid);
-      firstIndex = firstIndex + ((3 * rowInSubGrid)) - 1;
-
-      unavailable.push(this.sudokuTemp[firstIndex]);
-      unavailable.push(this.sudokuTemp[firstIndex += 1]);
-      unavailable.push(this.sudokuTemp[firstIndex += 1]);
-    });
-
-    // get the possible values that can be filled in a row
-    return this.getAvailableValues(unavailable);
-  }
-
-  /**
-   * Returns the possible values of the cell
-   * @param cellId : Cell for which value needs to be filled
-   */
-  private getAvailableValuesInSubGrid(cellId: number): number[] {
-
-    let available: number[] = [];
-    let subGridId: number = this.getSubGridByCellId(cellId);
-    let firstIndex: number = this.getSubGirdFirstIndex(subGridId) - 1;
-    let lastIndex: number = this.getSubGridLastIndex(subGridId) - 1;
-    let subGrid: number[] = this.sudokuTemp.slice(firstIndex, lastIndex);
-
-    available = this.getAvailableValues(subGrid);
-    return available;
-  }
-
-  /**
-   * Returns the possible values that can be filled by column
-   * @param cellId Cell Id for which possible value are required
-   */
-  private getAvailableValuesByColumn(cellId: number): number[] {
-
-    let unavailable: number[] = [];
-    let subGridId: number = this.getSubGridByCellId(cellId);
-    let subGridIndentificationValue: number = Math.floor(subGridId % 3);
-
-    // finds the grids which represents the row for the current cellId
-    let subGrids: number[] = this.allowedValues.filter(item => Math.floor(item % 3) == subGridIndentificationValue);
-
-    // Finds the row number of the cell in the sub grid
-    let rowInSubGrid: number = (((cellId % 9) - 1) / 3);
-
-    // Iterate over each grid and get the assigned values
-    subGrids.forEach(grid => {
-
-      // Identify the first index of the subgrid of same column as of current cell ID
-      let firstIndex = (((grid - 1) * 9) + (cellId % 3)) - 1;
-
-      unavailable.push(this.sudokuTemp[firstIndex]);
-      unavailable.push(this.sudokuTemp[firstIndex += 3]);
-      unavailable.push(this.sudokuTemp[firstIndex += 3]);
-    });
-
-    // return the possible values in the cell by columns
-    return this.getAvailableValues(unavailable);
-  }
 
   /**
    * Returns the possible values that can be filled in the cell
@@ -542,22 +392,23 @@ export default class Sudoku extends React.Component<ISudokuProps, ISudokuState> 
    */
   private getPossibleValues(cellId: number): number[] {
 
-    let byRow: number[] = this.getAvailableValuesByRow(cellId);
-    let byColumn: number[] = this.getAvailableValuesByColumn(cellId);
-    let bySubGrid: number[] = this.getAvailableValuesInSubGrid(cellId);
+    let availValues: AvailableValues = new AvailableValues(this.sudokuTemp);
+    let row: number[] = availValues.row(cellId);
+    let column: number[] = availValues.column(cellId);
+    let square: number[] = availValues.square(cellId);
 
     // Possible value will be the value which will be common to all the available values from grid,row and column
-    let possibleValue: number[] = byRow.filter(item => byColumn.indexOf(item) > -1);
-    possibleValue = bySubGrid.filter(item => possibleValue.indexOf(item) > -1);
+    let possibleValue: number[] = row.filter(item => column.indexOf(item) > -1);
+    possibleValue = square.filter(item => possibleValue.indexOf(item) > -1);
 
     // Check the value should be between 1 and 9
     possibleValue = possibleValue.filter(item => item > 0 && item < 10);
 
     // if(possibleValue.length == 0){
     console.log(`Cell: ${cellId}`);
-    console.log(`Columns: ${JSON.stringify(byColumn)}`);
-    console.log(`Rows: ${JSON.stringify(byRow)}`);
-    console.log(`Grid: ${JSON.stringify(bySubGrid)}`);
+    console.log(`Columns: ${JSON.stringify(column)}`);
+    console.log(`Rows: ${JSON.stringify(row)}`);
+    console.log(`Grid: ${JSON.stringify(square)}`);
     console.log(`final Possibility: ${JSON.stringify(possibleValue)}`);
     console.log(`----------------------------------`);
     // }

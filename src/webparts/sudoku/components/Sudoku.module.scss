@@ -13,12 +13,13 @@
 
   .row {
     @include ms-Grid-row;
-    @include ms-fontColor-white;
-    background-color: $ms-color-themeDark;    
+    // @include ms-fontColor-;
+    // background-color: $ms-color-themeDark;    
   }
 
   .column {
     @include ms-Grid-col;    
+    border:1px solid lightgray;
   }
 
   .title {
