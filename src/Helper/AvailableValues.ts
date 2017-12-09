@@ -50,7 +50,7 @@ export class AvailableValues {
         squares.forEach(square => {
 
             // Identify the first index of the subgrid of same column as of current cell ID
-            let firstIndex = (((square - 1) * 9) + ((cellId) % 3));
+            let firstIndex = Helper.getColFirstIndex(cellId, square);
             Helper.log(`Column | Square: ${square} | firstIndex:${firstIndex}`);
 
             unavailable.push(this.sudoku[firstIndex]);
@@ -74,5 +74,27 @@ export class AvailableValues {
         let square: number[] = this.sudoku.slice(firstIndex, firstIndex + 9);
 
         return Helper.getAvailableValues(square);
+    }
+
+    public getIndexes(cellId: number, type: string): number[] {
+
+        let indexes: number[] = [];
+
+        // All the squares in the same row/column of the curren cell
+        let squares: number[] = Helper.getSquares(cellId, type);
+
+        // Iterate over each square and get the indexes
+        squares.forEach(square => {
+
+            // Identify the first index of the subgrid of same row/column as of current cell ID
+            let firstIndex: number = type == 'Row' ? Helper.getRowFirstIndex(cellId, square) : Helper.getColFirstIndex(cellId, square);
+            let diff: number = type == 'Row' ? 1 : 3;
+
+            indexes.push(firstIndex);
+            indexes.push(firstIndex += diff);
+            indexes.push(firstIndex += diff);
+        });
+
+        return indexes;
     }
 }

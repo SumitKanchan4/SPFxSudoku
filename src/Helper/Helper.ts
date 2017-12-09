@@ -84,7 +84,7 @@ export class Helper {
     }
 
     public static log(message: string): void {
-        console.log(message);
+        //console.log(message);
     }
 
     /**
@@ -102,5 +102,9 @@ export class Helper {
         let firstIndex: number = Helper.getFirstIndex(square);
         firstIndex = firstIndex + (3 * (rowIndex));
         return firstIndex;
+    }
+
+    public static getColFirstIndex(cellId: number, square: number): number {
+        return (((square - 1) * 9) + (cellId % 3 == 0 ? 3 : cellId % 3));
     }
 }
